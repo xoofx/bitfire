@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sfx.h"
+#include <io.h>
+//#include "sfx.h"
 
 #define BUFFER_SIZE 65536  /* must be > MAX_OFFSET */
 #define INITIAL_OFFSET 1
@@ -347,118 +348,119 @@ void write_reencoded_stream(ctx* ctx) {
         exit(1);
     }
 
-    /* as sfx */
-    if (ctx->sfx) {
-        printf("Creating sfx with start-address $%04x\n", ctx->sfx_addr);
-        if (ctx->sfx_small) {
-            if (ctx->sfx_effect) {
-                ctx->sfx_size = sizeof(decruncher_small_effect);
-                /* copy over to change values in code */
-                ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
-                memcpy (ctx->sfx_code, decruncher_small_effect, ctx->sfx_size);
-            } else {
-                ctx->sfx_size = sizeof(decruncher_small);
-                /* copy over to change values in code */
-                ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
-                memcpy (ctx->sfx_code, decruncher_small, ctx->sfx_size);
-            }
-        } else {
-            if (ctx->sfx_effect) {
-                ctx->sfx_size = sizeof(decruncher_effect);
-                /* copy over to change values in code */
-                ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
-                memcpy (ctx->sfx_code, decruncher_effect, ctx->sfx_size);
-            } else {
-                ctx->sfx_size = sizeof(decruncher);
-                /* copy over to change values in code */
-                ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
-                memcpy (ctx->sfx_code, decruncher, ctx->sfx_size);
-            }
-        }
-        ctx->sfx_size -= DALI_VARS_SIZE;
+    ///* as sfx */
+    //if (ctx->sfx) {
+    //    printf("Creating sfx with start-address $%04x\n", ctx->sfx_addr);
+    //    if (ctx->sfx_small) {
+    //        if (ctx->sfx_effect) {
+    //            ctx->sfx_size = sizeof(decruncher_small_effect);
+    //            /* copy over to change values in code */
+    //            ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
+    //            memcpy (ctx->sfx_code, decruncher_small_effect, ctx->sfx_size);
+    //        } else {
+    //            ctx->sfx_size = sizeof(decruncher_small);
+    //            /* copy over to change values in code */
+    //            ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
+    //            memcpy (ctx->sfx_code, decruncher_small, ctx->sfx_size);
+    //        }
+    //    } else {
+    //        if (ctx->sfx_effect) {
+    //            ctx->sfx_size = sizeof(decruncher_effect);
+    //            /* copy over to change values in code */
+    //            ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
+    //            memcpy (ctx->sfx_code, decruncher_effect, ctx->sfx_size);
+    //        } else {
+    //            ctx->sfx_size = sizeof(decruncher);
+    //            /* copy over to change values in code */
+    //            ctx->sfx_code = (unsigned char *)malloc(ctx->sfx_size);
+    //            memcpy (ctx->sfx_code, decruncher, ctx->sfx_size);
+    //        }
+    //    }
+    //    ctx->sfx_size -= DALI_VARS_SIZE;
 
-        /* fetch vars from binary */
+    //    /* fetch vars from binary */
 
-        var_dali_sfx_src = ctx->sfx_size + 0;
-        var_dali_src = ctx->sfx_size + 2;
-        var_dali_dst = ctx->sfx_size + 4;
-        var_dali_sfx_addr = ctx->sfx_size + 6;
-        var_dali_data_end = ctx->sfx_size + 8;
-        var_dali_data_size_hi = ctx->sfx_size + 10;
-        var_dali_01 = ctx->sfx_size + 12;
-        var_dali_cli = ctx->sfx_size + 14;
-        //var_dali_effect_code = ctx->sfx_size + 16;
+    //    var_dali_sfx_src = ctx->sfx_size + 0;
+    //    var_dali_src = ctx->sfx_size + 2;
+    //    var_dali_dst = ctx->sfx_size + 4;
+    //    var_dali_sfx_addr = ctx->sfx_size + 6;
+    //    var_dali_data_end = ctx->sfx_size + 8;
+    //    var_dali_data_size_hi = ctx->sfx_size + 10;
+    //    var_dali_01 = ctx->sfx_size + 12;
+    //    var_dali_cli = ctx->sfx_size + 14;
+    //    //var_dali_effect_code = ctx->sfx_size + 16;
 
-        dali_sfx_src = get_var(ctx, var_dali_sfx_src);
-        dali_src = get_var(ctx, var_dali_src);
-        dali_dst = get_var(ctx, var_dali_dst);
-        dali_sfx_addr = get_var(ctx, var_dali_sfx_addr);
-        dali_data_end = get_var(ctx, var_dali_data_end);
-        dali_data_size_hi = get_var(ctx, var_dali_data_size_hi);
-        dali_01 = get_var(ctx, var_dali_01);
-        dali_cli = get_var(ctx, var_dali_cli);
-        //dali_effect_code = get_var(ctx, var_dali_effect_code);
+    //    dali_sfx_src = get_var(ctx, var_dali_sfx_src);
+    //    dali_src = get_var(ctx, var_dali_src);
+    //    dali_dst = get_var(ctx, var_dali_dst);
+    //    dali_sfx_addr = get_var(ctx, var_dali_sfx_addr);
+    //    dali_data_end = get_var(ctx, var_dali_data_end);
+    //    dali_data_size_hi = get_var(ctx, var_dali_data_size_hi);
+    //    dali_01 = get_var(ctx, var_dali_01);
+    //    dali_cli = get_var(ctx, var_dali_cli);
+    //    //dali_effect_code = get_var(ctx, var_dali_effect_code);
 
-        /* setup jmp target after decompression */
-        ctx->sfx_code[dali_sfx_addr + 0] = ctx->sfx_addr & 0xff;
-        ctx->sfx_code[dali_sfx_addr + 1] = (ctx->sfx_addr >> 8) & 0xff;
+    //    /* setup jmp target after decompression */
+    //    ctx->sfx_code[dali_sfx_addr + 0] = ctx->sfx_addr & 0xff;
+    //    ctx->sfx_code[dali_sfx_addr + 1] = (ctx->sfx_addr >> 8) & 0xff;
 
-        /* setup decompression destination */
-        ctx->sfx_code[dali_dst + 0] = ctx->cbm_orig_addr & 0xff;
-        ctx->sfx_code[dali_dst + 1] = (ctx->cbm_orig_addr >> 8) & 0xff;
+    //    /* setup decompression destination */
+    //    ctx->sfx_code[dali_dst + 0] = ctx->cbm_orig_addr & 0xff;
+    //    ctx->sfx_code[dali_dst + 1] = (ctx->cbm_orig_addr >> 8) & 0xff;
 
-        /* setup compressed data src */
-        ctx->sfx_code[dali_src + 0] = (0x10000 - ctx->reencoded_index) & 0xff;
-        ctx->sfx_code[dali_src + 1] = ((0x10000 - ctx->reencoded_index) >> 8) & 0xff;
+    //    /* setup compressed data src */
+    //    ctx->sfx_code[dali_src + 0] = (0x10000 - ctx->reencoded_index) & 0xff;
+    //    ctx->sfx_code[dali_src + 1] = ((0x10000 - ctx->reencoded_index) >> 8) & 0xff;
 
-        /* setup compressed data end */
-        ctx->sfx_code[dali_data_end + 0] = (sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100) & 0xff;
-        ctx->sfx_code[dali_data_end + 1] = ((sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100) >> 8) & 0xff;
+    //    /* setup compressed data end */
+    //    ctx->sfx_code[dali_data_end + 0] = (sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100) & 0xff;
+    //    ctx->sfx_code[dali_data_end + 1] = ((sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100) >> 8) & 0xff;
 
-        ctx->sfx_code[dali_data_size_hi] = 0xff - (((ctx->reencoded_index + 0x100) >> 8) & 0xff);
+    //    ctx->sfx_code[dali_data_size_hi] = 0xff - (((ctx->reencoded_index + 0x100) >> 8) & 0xff);
 
-        if (ctx->sfx_small) {
-            if (ctx->sfx_effect) {
-            } else {
-            }
-        } else {
-            if (ctx->sfx_01 < 0) ctx->sfx_01 = 0x37;
-            ctx->sfx_code[dali_01] = ctx->sfx_01;
-            if (ctx->sfx_cli) ctx->sfx_code[dali_cli] = 0x58;
-            if (ctx->sfx_effect) {
-            } else {
-            }
-        }
+    //    if (ctx->sfx_small) {
+    //        if (ctx->sfx_effect) {
+    //        } else {
+    //        }
+    //    } else {
+    //        if (ctx->sfx_01 < 0) ctx->sfx_01 = 0x37;
+    //        ctx->sfx_code[dali_01] = ctx->sfx_01;
+    //        if (ctx->sfx_cli) ctx->sfx_code[dali_cli] = 0x58;
+    //        if (ctx->sfx_effect) {
+    //        } else {
+    //        }
+    //    }
 
-        printf("original: $%04x-$%04x ($%04x) 100%%\n", (int)ctx->cbm_orig_addr, (int)ctx->cbm_orig_addr + (int)ctx->unpacked_size, (int)ctx->unpacked_size);
-        if (ctx->cbm_relocate_sfx_addr >= 0) {
-            sfx_addr = ctx->cbm_relocate_sfx_addr;
-            if (ctx->sfx_small) {
-                ctx->sfx_code[dali_sfx_src + 0] = (ctx->cbm_relocate_sfx_addr + 0xd) & 255;
-                ctx->sfx_code[dali_sfx_src + 1] = (ctx->cbm_relocate_sfx_addr + 0xd) >> 8;
-            } else {
-                ctx->sfx_code[dali_sfx_src + 0] = (ctx->cbm_relocate_sfx_addr + 0x13) & 255;
-                ctx->sfx_code[dali_sfx_src + 1] = (ctx->cbm_relocate_sfx_addr + 0x13) >> 8;
-            }
-            ctx->sfx_code[dali_data_end + 0] = (ctx->cbm_relocate_sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100 - 0x0c) & 0xff;
-            ctx->sfx_code[dali_data_end + 1] = ((ctx->cbm_relocate_sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100 - 0x0c) >> 8) & 0xff;
+    //    printf("original: $%04x-$%04x ($%04x) 100%%\n", (int)ctx->cbm_orig_addr, (int)ctx->cbm_orig_addr + (int)ctx->unpacked_size, (int)ctx->unpacked_size);
+    //    if (ctx->cbm_relocate_sfx_addr >= 0) {
+    //        sfx_addr = ctx->cbm_relocate_sfx_addr;
+    //        if (ctx->sfx_small) {
+    //            ctx->sfx_code[dali_sfx_src + 0] = (ctx->cbm_relocate_sfx_addr + 0xd) & 255;
+    //            ctx->sfx_code[dali_sfx_src + 1] = (ctx->cbm_relocate_sfx_addr + 0xd) >> 8;
+    //        } else {
+    //            ctx->sfx_code[dali_sfx_src + 0] = (ctx->cbm_relocate_sfx_addr + 0x13) & 255;
+    //            ctx->sfx_code[dali_sfx_src + 1] = (ctx->cbm_relocate_sfx_addr + 0x13) >> 8;
+    //        }
+    //        ctx->sfx_code[dali_data_end + 0] = (ctx->cbm_relocate_sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100 - 0x0c) & 0xff;
+    //        ctx->sfx_code[dali_data_end + 1] = ((ctx->cbm_relocate_sfx_addr + ctx->sfx_size - 2 + ctx->reencoded_index - 0x100 - 0x0c) >> 8) & 0xff;
 
-            fputc(ctx->cbm_relocate_sfx_addr & 255, fp);
-            fputc(ctx->cbm_relocate_sfx_addr >> 8, fp);
+    //        fputc(ctx->cbm_relocate_sfx_addr & 255, fp);
+    //        fputc(ctx->cbm_relocate_sfx_addr >> 8, fp);
 
-            if (fwrite(ctx->sfx_code + 0xe, sizeof(char), ctx->sfx_size - 0xe, fp) != ctx->sfx_size - 0xe) {
-                fprintf(stderr, "Error: Cannot write output file %s\n", ctx->output_name);
-                exit(1);
-            }
-        } else {
-            if (fwrite(ctx->sfx_code, sizeof(char), ctx->sfx_size, fp) != ctx->sfx_size) {
-                fprintf(stderr, "Error: Cannot write output file %s\n", ctx->output_name);
-                exit(1);
-            }
-        }
-        printf("packed:   $%04x-$%04x ($%04x) %3.2f%%\n", sfx_addr, sfx_addr + (int)ctx->sfx_size + (int)ctx->packed_index, (int)ctx->sfx_size + (int)ctx->packed_index, ((float)(ctx->packed_index + (int)ctx->sfx_size) / (float)(ctx->unpacked_size) * 100.0));
-    /* or standard compressed */
-    } else {
+    //        if (fwrite(ctx->sfx_code + 0xe, sizeof(char), ctx->sfx_size - 0xe, fp) != ctx->sfx_size - 0xe) {
+    //            fprintf(stderr, "Error: Cannot write output file %s\n", ctx->output_name);
+    //            exit(1);
+    //        }
+    //    } else {
+    //        if (fwrite(ctx->sfx_code, sizeof(char), ctx->sfx_size, fp) != ctx->sfx_size) {
+    //            fprintf(stderr, "Error: Cannot write output file %s\n", ctx->output_name);
+    //            exit(1);
+    //        }
+    //    }
+    //    printf("packed:   $%04x-$%04x ($%04x) %3.2f%%\n", sfx_addr, sfx_addr + (int)ctx->sfx_size + (int)ctx->packed_index, (int)ctx->sfx_size + (int)ctx->packed_index, ((float)(ctx->packed_index + (int)ctx->sfx_size) / (float)(ctx->unpacked_size) * 100.0));
+    ///* or standard compressed */
+    //} else 
+    {
         if (ctx->cbm_relocate_origin_addr >= 0) {
             ctx->cbm_orig_addr = ctx->cbm_relocate_origin_addr;
             ctx->cbm = TRUE;
@@ -628,11 +630,11 @@ void do_reencode(ctx* ctx) {
     /* write clamped raw data */
     ctx->clamped_name = (char*)malloc(sizeof(src_name));
     strcpy(ctx->clamped_name, src_name);
-//#ifdef _WIN32
-//    sfp = fopen(mktemp(ctx->clamped_name),"wb");
-//#else
+#ifdef _WIN32
+    sfp = fopen(_mktemp(ctx->clamped_name),"wb");
+#else
     sfp = fdopen(mkstemp(ctx->clamped_name),"wb");
-//#endif
+#endif
     if (!sfp) {
         fprintf(stderr, "Error: Cannot create clamped file %s\n", ctx->clamped_name);
         exit(1);
@@ -651,11 +653,11 @@ void do_reencode(ctx* ctx) {
         if (ctx->prefix_name == NULL) {
             ctx->prefix_name = (char*)malloc(sizeof(tmp_name));
             strcpy(ctx->prefix_name, tmp_name);
-//#ifdef _WIN32
-//            dfp = fopen(mktemp(ctx->prefix_name),"wb");
-//#else
+#ifdef _WIN32
+            dfp = fopen(_mktemp(ctx->prefix_name),"wb");
+#else
             dfp = fdopen(mkstemp(ctx->prefix_name),"wb");
-//#endif
+#endif
             printf("using prefix: $%04x - $%04x\n", ctx->cbm_prefix_from, ctx->cbm_prefix_from + dict_size);
             if (!dfp) {
                 fprintf(stderr, "Error: Cannot create dict file %s\n", ctx->prefix_name);
